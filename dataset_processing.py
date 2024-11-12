@@ -10,26 +10,22 @@ import statsmodels.api as sm
 import keras
 import lowess_cuda
 
-timepoints = 180
-train_p = []
-train_r = []
-train_c = []
-train_y = []
-val_p = []
-val_r = []
-val_c = []
-val_y = []
-test_p = {} # by case
-test_r = {}
-test_c = {}
-test_y = {}
-
-def load_data(path):
+def load_data_from(path):
     data = pd.read_csv(path).convert_dtypes().astype({'Case ID': 'category'})
     data = data.rename(columns=dict(zip(data.columns,[re.sub(r"\(.*?\)","",string).split(' ')[0].lower() for string in data.columns])))
     data = data.rename(columns={'case':'id'})
 
     return data.groupby('id')
+
+def load_data(path, url=None):
+    if os.path.isfile(path):
+        print(f"{path} found, loading from local file...")
+        return load_data_from(path)
+    if not url is None:
+        print(f"{path} was not found, loading from {url}")
+        return load_data_from(url)
+    raise Exception("File does not exist, and a download url was not provided.")
+
 
 def smooth_case(vals):
     vals_padded = np.pad(vals.to_numpy(), (100, 100), 'edge')
@@ -87,7 +83,7 @@ def make_sequence(raw_data, timepoints):
 
 if __name__ == "__main__":
     print("Loading training data...")
-    data = load_data("data.csv")
+    data = load_data("data.csv", url="https://osf.io/download/y5kcx/")
     print("Loading training data: Done")
     print("Storing all cases...")
     make_sequence(data, 180)
