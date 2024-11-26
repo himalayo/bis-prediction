@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import keras
-import lowess_cuda
 from screen import log_action, bar, Status
 
 gaps = np.arange(0, 10 * 181, 10)
@@ -109,11 +108,5 @@ def make_sequence(raw_data):
         save_data(id, prop, remi, bis, c)
 
 if __name__ == "__main__":
-    # print("Loading training data...")
-    # data = load_data("data.csv", url="https://osf.io/download/y5kcx/")
-    # print("Loading training data: Done")
-    # print("Storing all cases...")
-    # make_sequence(data, 180)
-    # print("Storing all cases: Done")
     data = load_data("data.csv", url="https://osf.io/download/y5kcx")
     make_sequence(data)

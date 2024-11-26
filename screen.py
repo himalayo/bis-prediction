@@ -111,12 +111,6 @@ if __name__ == "__main__":
     LOG_SCREEN.append("6")
     LOG_SCREEN.append("7")
 
-    #for i in range(30):
-    #    a = test[3][:i+1]+'#'+test[-1][i+2:]
-    #    test[3] = a
-    #    time.sleep(0.1)
-    #
-    #
     for x,_,_ in bar(title="test",pos=0)(time.sleep)([0.1]*30):
         for y,_,_ in bar(pos=1)(time.sleep)([0.1]*10):
             pass
