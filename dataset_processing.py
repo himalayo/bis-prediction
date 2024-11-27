@@ -96,17 +96,45 @@ def process_case(status):
 
 
 def make_sequence(raw_data):
+    avg_age = 0
+    avg_sex = 0
+    avg_wt = 0
+    avg_ht = 0
+    tot    = 0
+
+
     os.makedirs(os.path.join("data","train"), exist_ok=True)
     os.makedirs(os.path.join("data","test"), exist_ok=True)
     os.makedirs(os.path.join("data","val"), exist_ok=True)
     progress = Status(title="Cases")
     current_case = Status(title="Current case")
     case_status = Status(title="Case status")
-    for _,(id, _), (prop, remi, bis, c) in progress.bar(bar_size=50)(process_case(case_status))(raw_data):
+    case_avg = Status(title="Avg")
+    case_age = Status(title="Age")
+    case_sex = Status(title="Sex")
+    case_wt = Status(title="Weight")
+    case_ht = Status(title="Height")
+    case_tot = Status(title="Samples")
+    print("\033[2J")
+
+    for _,(id, case), (prop, remi, bis, c) in progress.bar(bar_size=50)(process_case(case_status))(raw_data):
         current_case.update(id)
+        case_age.update(c[0,0])
+        case_sex.update(c[0,1])
+        case_wt.update(c[0,2])
+        case_ht.update(c[0,3])
+        case_tot.update(c.shape[0])
         case_status.update("Saving")
         save_data(id, prop, remi, bis, c)
+        avg_age += case_age.data*case_tot.data
+        avg_sex += case_sex.data*case_tot.data
+        avg_wt  += case_wt.data* case_tot.data
+        avg_ht  += case_ht.data* case_tot.data
+        tot     += case_tot.data
+
+        case_avg.update([avg_age/tot, avg_sex/tot, avg_wt/tot, avg_ht/tot, tot])
 
 if __name__ == "__main__":
     data = load_data("data.csv", url="https://osf.io/download/y5kcx")
+    print("\n"*10)
     make_sequence(data)
