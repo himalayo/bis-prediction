@@ -33,6 +33,13 @@ def directory_metadata(current_directory=None, curr_status=None, avg_status=None
         sum_sex = 0
         sum_wt  = 0
         sum_ht  = 0
+
+
+        sum_age_sq = 0
+        sum_sex_sq = 0
+        sum_wt_sq  = 0
+        sum_ht_sq  = 0
+
         tot     = 0
         cum_tot = {}
         paths = [(os.path.join(directory,path),) for path in sorted(os.listdir(directory))]
@@ -42,6 +49,12 @@ def directory_metadata(current_directory=None, curr_status=None, avg_status=None
             sum_sex += case_sex
             sum_wt  += case_wt
             sum_ht  += case_ht
+
+            sum_age_sq += ((case_age/case_samples)**2)*case_samples
+            sum_sex_sq += ((case_sex/case_samples)**2)*case_samples
+            sum_wt_sq  += ((case_wt/case_samples)**2)*case_samples
+            sum_ht_sq  += ((case_ht/case_samples)**2)*case_samples
+
             cum_tot[tot] = path[0]
             tot += case_samples
             avg_status.update([sum_age/tot, sum_sex/tot, sum_wt/tot, sum_ht/tot, tot])
@@ -51,6 +64,14 @@ def directory_metadata(current_directory=None, curr_status=None, avg_status=None
             'avg_wt' : sum_wt/tot,
             'avg_ht' : sum_ht/tot,
             'samples': tot,
+            'sum_age_sq': sum_age_sq,
+            'sum_sex_sq': sum_sex_sq,
+            'sum_wt_sq' : sum_wt_sq,
+            'sum_ht_sq' : sum_ht_sq,
+            'sum_age': sum_age,
+            'sum_sex': sum_sex,
+            'sum_wt' : sum_wt,
+            'sum_ht' : sum_ht,
             'range' : cum_tot}
 
     return process_directory
@@ -71,15 +92,35 @@ def dataset_metadata(directory):
         xs[subdir] = process_directory(os.path.join(directory,subdir))
 
     xs['total'] = {
-        'avg_age': (xs['train']['avg_age']*xs['train']['samples'] + xs['val']['avg_age']*xs['val']['samples'])
+        'avg_age': (xs['train']['sum_age'] + xs['val']['sum_age'])
                    / (xs['train']['samples']+xs['val']['samples']),
-        'avg_sex': (xs['train']['avg_sex']*xs['train']['samples'] + xs['val']['avg_sex']*xs['val']['samples'])
+        'avg_sex': (xs['train']['sum_sex'] + xs['val']['sum_sex'])
                    / (xs['train']['samples']+xs['val']['samples']),
 
-        'avg_wt' : (xs['train']['avg_wt']*xs['train']['samples'] + xs['val']['avg_wt']*xs['val']['samples'])
+        'avg_wt' : (xs['train']['sum_wt'] + xs['val']['sum_wt'])
                    / (xs['train']['samples']+xs['val']['samples']),
-        'avg_ht' : (xs['train']['avg_ht']*xs['train']['samples'] + xs['val']['avg_ht']*xs['val']['samples'])
-                   / (xs['train']['samples']+xs['val']['samples'])
+        'avg_ht' : (xs['train']['sum_ht'] + xs['val']['sum_ht'])
+                   / (xs['train']['samples']+xs['val']['samples']),
+
+        'std_age': ((xs['train']['sum_age_sq']+xs['val']['sum_age_sq']-
+                    (((xs['train']['sum_age']+xs['val']['sum_age'])**2)/
+                     (xs['train']['samples']+xs['val']['samples'])))/
+                    (xs['train']['samples']+xs['val']['samples']-1))**(1/2),
+
+        'std_sex': ((xs['train']['sum_sex_sq']+xs['val']['sum_sex_sq']-
+                    (((xs['train']['sum_sex']+xs['val']['sum_sex'])**2)/
+                     (xs['train']['samples']+xs['val']['samples'])))/
+                    (xs['train']['samples']+xs['val']['samples']-1))**(1/2),
+
+        'std_wt' : ((xs['train']['sum_wt_sq']+xs['val']['sum_wt_sq']-
+                    (((xs['train']['sum_wt']+xs['val']['sum_wt'])**2)/
+                     (xs['train']['samples']+xs['val']['samples'])))/
+                    (xs['train']['samples']+xs['val']['samples']-1))**(1/2),
+
+        'std_ht' : ((xs['train']['sum_ht_sq']+xs['val']['sum_ht_sq']-
+                    (((xs['train']['sum_ht']+xs['val']['sum_ht'])**2)/
+                     (xs['train']['samples']+xs['val']['samples'])))/
+                    (xs['train']['samples']+xs['val']['samples']-1))**(1/2)
     }
 
     return xs
